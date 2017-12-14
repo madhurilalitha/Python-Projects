@@ -71,7 +71,6 @@ class Entity:
         for each in mydata.ents:
             if each.label_ == 'PERSON':
                 highlight_text(self.doc, each.text)
-                print (each.text)
 
     def save_document(self):
         self.doc.save('Contract_Output.docx')
