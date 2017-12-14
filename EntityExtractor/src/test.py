@@ -23,7 +23,7 @@ class TestEntity(unittest.TestCase):
         et.highlight_address_fields()
         et.highlight_contact_details()
         et.highlight_dates()
-        et.highlight_person_entities()
+        et.tag_person_entities()
 
         et.save_document()
 
