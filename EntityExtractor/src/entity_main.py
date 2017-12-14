@@ -63,7 +63,7 @@ class Entity:
         match = re.search(r'(\d+/\d+/\d+)', self.raw_data)
         highlight_text(self.doc, match.group(1))
 
-    def highlight_person_entities(self):
+    def tag_text(self):
 
         # use pre-trained spacy models to get the 'PERSON' entities
         model = spacy.load('en_core_web_sm')
