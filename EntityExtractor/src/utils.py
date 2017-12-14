@@ -26,6 +26,15 @@ def highlight_text(doc, word):
                 font.highlight_color = WD_COLOR_INDEX.YELLOW
             paragraph.add_run(substrings[-1])
 
+def tag_text(doc, word):
+
+    for paragraph in doc.paragraphs:
+        if word in paragraph.text:
+            inline = paragraph.runs
+            for i in range(len(inline)):
+                if word in inline[i].text:
+                    text = inline[i].text.replace(word, str(word+'[PERSON]'))
+                    inline[i].text
 
 def get_sentence_tokens(text):
     paragraphs = [p for p in text.split('\n') if p]
