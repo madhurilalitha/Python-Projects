@@ -54,4 +54,3 @@ def get_pos_tags(text):
 
 def get_ne_chunks(pos):
     return ne_chunk(pos)
-
