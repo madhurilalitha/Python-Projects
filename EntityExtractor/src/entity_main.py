@@ -8,13 +8,13 @@ import spacy
 import docx2txt
 import re
 from docx import Document
-from utils import get_sentence_tokens, highlight_text
+from utils import get_sentence_tokens, tag_text, highlight_text
 
 
 class Entity:
     def __init__(self):
-        self.raw_data = docx2txt.process('Contract_Template.docx')
-        self.doc = Document('Contract_Template.docx')
+        self.raw_data = docx2txt.process('Contract_Input.docx')
+        self.doc = Document('Contract_Input.docx')
 
     def highlight_address_fields(self):
 
@@ -63,14 +63,18 @@ class Entity:
         match = re.search(r'(\d+/\d+/\d+)', self.raw_data)
         highlight_text(self.doc, match.group(1))
 
-    def tag_text(self):
+    def tag_person_entities(self):
 
         # use pre-trained spacy models to get the 'PERSON' entities
         model = spacy.load('en_core_web_sm')
         mydata = model(self.raw_data)
+        person_labels = list()
         for each in mydata.ents:
             if each.label_ == 'PERSON':
-                highlight_text(self.doc, each.text)
+            	person_labels.append(each.text)
+        unique_person_labels = set(person_labels)
+        for label in unique_person_labels:
+        	tag_text(self.doc, label)
 
     def save_document(self):
         self.doc.save('Contract_Output.docx')
