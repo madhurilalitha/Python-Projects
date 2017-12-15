@@ -4,77 +4,39 @@
 Created by Lalitha Madhuri Putchala on Dec 10 2017
 """
 
-import spacy
-import docx2txt
-import re
+import unittest
+from entity_main import Entity
 from docx import Document
-from utils import get_sentence_tokens, tag_text, highlight_text
+import docx2txt
 
 
-class Entity:
-    def __init__(self):
-        self.raw_data = docx2txt.process('Contract_Input.docx')
-        self.doc = Document('Contract_Input.docx')
+class TestEntity(unittest.TestCase):
 
-    def highlight_address_fields(self):
+    '''The below function verifies the basic sanity functionality of the program 
+       by validating the word count in the document before and after the highlighting
+       of the text'''
 
-        # extract street address/zipcodes/ proper format address and improper format address using python regex
-        street_address_exp = re.compile(
-            u'\d{1,4} [\w\s]{1,20}(?:street|st|avenue|ave|road|rd|highway|hwy|square|sq|trail|trl|drive|dr|court|ct|park|parkway|pkwy|circle|cir|boulevard|blvd)\W?(?=\D|$)',
-            re.IGNORECASE)
-        street_addresses = re.findall(street_address_exp, self.raw_data)
+    def test_sanity(self):
 
-        zip_code_exp = re.compile(r'\b\d{5}(?:[-\s]\d{4})?\b')
-        zip_codes = re.findall(zip_code_exp, self.raw_data)
+        et = Entity()
+        et.highlight_address_fields()
+        et.highlight_contact_details()
+        et.highlight_dates()
+        person_count = et.tag_person_entities()
 
-        proper_address_exp = "[0-9]{1,5} .+, .+, [A-Z]{2} [0-9]{5}"
-        proper_addresses = re.findall(proper_address_exp, self.raw_data)
-        # logic to handle the improper format address instead of using regex functions
-        sentence_tokens = get_sentence_tokens(self.raw_data)
-        for i in range(len(sentence_tokens)):
-            if sentence_tokens[i][0] == 'Address:':
-                improper_format = sentence_tokens[i + 1][0]
+        et.save_document()
 
-        address_details = list()
-        address_details.extend(street_addresses)
-        address_details.extend(zip_codes)
-        address_details.extend(proper_addresses)
-        address_details.append(improper_format)
+        # load the new document with highlighted text
 
-        # highlight address fields
-        for each in address_details:
-            highlight_text(self.doc, each.strip())
+        new_raw_data = docx2txt.process('Contract_Output.docx')
+        new_cnt = 0
+        word_tokens = new_raw_data.split(' ')
+        for each_token in word_tokens:
+        	if '[PERSON]' in each_token:
+        		new_cnt +=1
+        self.assertEqual(person_count, new_cnt)
 
-    def highlight_contact_details(self):
 
-        contact_details = list()
-        # Get emails and phone numbers
-        emails = re.findall(r'[\w\.-]+@[\w\.-]+', self.raw_data)
-        phonenumbers = re.findall(
-            r'\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}', self.raw_data)
-        contact_details.extend(emails)
-        contact_details.extend(emails)
-        for contact in contact_details:
-            highlight_text(self.doc, contact)
+if __name__ == '__main__':
+    unittest.main()
 
-    def highlight_dates(self):
-
-        # Get dates
-        match = re.search(r'(\d+/\d+/\d+)', self.raw_data)
-        highlight_text(self.doc, match.group(1))
-
-    def tag_person_entities(self):
-
-        # use pre-trained spacy models to get the 'PERSON' entities
-        model = spacy.load('en_core_web_sm')
-        mydata = model(self.raw_data)
-        person_labels = list()
-        for each in mydata.ents:
-            if each.label_ == 'PERSON':
-            	person_labels.append(each.text)
-        unique_person_labels = set(person_labels)
-        for label in unique_person_labels:
-        	tag_text(self.doc, label)
-
-    def save_document(self):
-        self.doc.save('Contract_Output.docx')
