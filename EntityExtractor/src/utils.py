@@ -33,8 +33,8 @@ def tag_text(doc, word):
             inline = paragraph.runs
             for i in range(len(inline)):
                 if word in inline[i].text:
-                    text = inline[i].text.replace(word, str(word+'[PERSON]'))
-                    inline[i].text
+                    text = inline[i].text.replace(word, '['+str(word)+']'+'[PERSON]')
+                    inline[i].text = text
 
 def get_sentence_tokens(text):
     paragraphs = [p for p in text.split('\n') if p]
